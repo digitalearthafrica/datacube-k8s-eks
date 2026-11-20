@@ -99,6 +99,12 @@ variable "spot_volume_size" {
   default = 20
 }
 
+variable "al2023_enabled" {
+  type        = bool
+  default     = false
+  description = "If true, select the x86_64 standard AL2023 EKS AMI and use nodeadm NodeConfig user data. If false, select the AL2 EKS AMI and use bootstrap.sh. ARM, GPU, and custom images still need ami_image_id. Enabling this changes the worker launch template; autoscaling groups follow latest_version, so the next apply starts new instances."
+}
+
 variable "extra_kubelet_args" {
   type        = string
   description = "Additional kubelet command-line arguments (e.g. '--arg1=value --arg2')"
@@ -107,13 +113,18 @@ variable "extra_kubelet_args" {
 
 variable "extra_bootstrap_args" {
   type        = string
-  description = "Additional bootstrap.sh command-line arguments (e.g. '--arg1=value --arg2')"
+  description = "Additional bootstrap.sh command-line arguments (e.g. '--arg1=value --arg2'). AL2 only. Leave empty when al2023_enabled is true."
   default     = ""
+
+  validation {
+    condition     = var.al2023_enabled == false || trimspace(var.extra_bootstrap_args) == ""
+    error_message = "extra_bootstrap_args applies to the AL2 bootstrap.sh path only. Unset extra_bootstrap_args or set al2023_enabled = false."
+  }
 }
 
 variable "extra_userdata" {
   type        = string
-  description = "Additional EC2 user data commands that will be passed to EKS nodes"
+  description = "Additional EC2 user data commands that will be passed to EKS nodes. With al2023_enabled these run from cloud-init and must not call nodeadm or restart kubelet."
   default     = <<USERDATA
 echo ""
 USERDATA
