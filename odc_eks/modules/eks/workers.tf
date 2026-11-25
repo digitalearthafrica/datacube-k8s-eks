@@ -72,7 +72,7 @@ resource "aws_autoscaling_group" "spot_nodes" {
   max_size            = var.max_spot_nodes
   min_size            = var.min_spot_nodes
   name                = "${var.node_group_name}-${aws_launch_template.spot[0].id}-spot"
-  vpc_zone_identifier = local.default_node_subnet_ids
+  vpc_zone_identifier = var.eks_subnet_ids
 
   # Don't reset to default size every time terraform is applied
   lifecycle {
