@@ -50,7 +50,7 @@ variable "node_group_name" {
 }
 
 variable "node_availability_zones" {
-  description = "AZs for the default on-demand and spot node ASGs. Empty uses every private subnet."
+  description = "AZs for the default on-demand node ASGs. Empty uses every private subnet."
   type        = list(string)
   default     = []
 }
