@@ -143,6 +143,7 @@ module "eks" {
   min_spot_nodes               = var.min_spot_nodes
   max_spot_nodes               = var.max_spot_nodes
   node_group_name              = var.node_group_name
+  node_availability_zones      = var.node_availability_zones
   ami_image_id                 = var.ami_image_id
   default_worker_instance_type = var.default_worker_instance_type
   spot_nodes_enabled           = var.spot_nodes_enabled

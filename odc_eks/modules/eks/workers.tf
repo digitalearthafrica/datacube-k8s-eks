@@ -1,14 +1,34 @@
+# count keeps the lookup off the plan graph until a zone list is set, and
+# avoids for_each on subnet ids that are not known until apply.
+data "aws_subnet" "eks_subnets" {
+  count = length(var.node_availability_zones) == 0 ? 0 : length(var.eks_subnet_ids)
+  id    = var.eks_subnet_ids[count.index]
+}
+
+locals {
+  default_node_subnet_ids = length(var.node_availability_zones) == 0 ? var.eks_subnet_ids : [
+    for subnet in data.aws_subnet.eks_subnets : subnet.id
+    if contains(var.node_availability_zones, subnet.availability_zone)
+  ]
+}
+
 resource "aws_autoscaling_group" "nodes" {
   desired_capacity    = var.desired_nodes
   max_size            = var.max_nodes
   min_size            = var.min_nodes
   name                = "${var.node_group_name}-${aws_launch_template.node.id}-nodes"
-  vpc_zone_identifier = var.eks_subnet_ids
+  vpc_zone_identifier = local.default_node_subnet_ids
 
   # Don't reset to default size every time terraform is applied
   lifecycle {
     ignore_changes        = [desired_capacity]
     create_before_destroy = true
+
+    precondition {
+      condition     = length(var.node_availability_zones) == 0 || length(local.default_node_subnet_ids) > 0
+      error_message = "node_availability_zones matched no private subnet used by the default node groups."
+    }
+
   }
 
   launch_template {

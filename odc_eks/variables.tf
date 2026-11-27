@@ -258,6 +258,12 @@ variable "node_group_name" {
   default = "eks"
 }
 
+variable "node_availability_zones" {
+  description = "AZs for the default on-demand node ASGs. Empty uses every private subnet."
+  type        = list(string)
+  default     = []
+}
+
 variable "default_worker_instance_type" {
 }
 
